@@ -36,12 +36,25 @@ export class AppComponent implements OnInit {
      }
       this.cols.push(parentHeader);
     });
-    // this.cols.push({
-    //   headerName: 'Total',
-    //   headerClass: 'bg-blue',
-    //   valueGetter:
-    //     "data['JAN']['amount'] + data['FEB']['amount'] + data['MAR']['amount']",
-    // });
+    this.cols.push({
+      headerName: 'Total',
+      headerClass: 'bg-yellow',
+      children:[
+        {
+          filed:"expected",
+          headerName:'expeceted',
+          headerClass: 'bg-yellow',
+          valueGetter: "data['JAN']['expected'] + data['FEB']['expected'] + data['MAR']['expected']",
+        },
+        {
+          filed:"committed",
+          headerName:'committed',
+          headerClass: 'bg-yellow',
+          valueGetter: "data['JAN']['committed'] + data['FEB']['committed'] + data['MAR']['committed']",
+        }
+
+      ]
+    });
   }
 
   bgColor: { [key: string]: string } = {
@@ -57,7 +70,7 @@ export class AppComponent implements OnInit {
       headerName: headerName,
       field: headerName,
       headerClass: this.bgColor[month],
-      width:"211px",
+      width:"160px",
       valueGetter: (params: any) => this.getValue(params, month, row),
     };
     if (headerName === 'committed' || headerName === 'expected') {
