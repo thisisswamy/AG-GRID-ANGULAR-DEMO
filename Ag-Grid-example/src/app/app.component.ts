@@ -45,32 +45,37 @@ export class AppComponent implements OnInit {
           headerName:'expeceted',
           headerClass: 'bg-yellow',
           valueGetter: "data['JAN']['expected'] + data['FEB']['expected'] + data['MAR']['expected']",
+          cellStyle:{ "background-color": 'yellow' }
         },
         {
           filed:"committed",
           headerName:'committed',
           headerClass: 'bg-yellow',
           valueGetter: "data['JAN']['committed'] + data['FEB']['committed'] + data['MAR']['committed']",
+          cellStyle:{ "background-color": 'yellow' }
         }
 
       ]
     });
+    console.log(this.cols)
   }
 
   bgColor: { [key: string]: string } = {
     USERINFO:'bg-blue',
-    JAN: 'bg-yellow text-center',
+    JAN: 'bg-yellow',
     FEB: 'bg-orange',
     MAR: 'bg-green',
     TOTAL: 'bg-blue',
   };
 
   getTableColumn(headerName: any, month: any, row: number, isEditable?:any) {
+    let cssColor = this.bgColor[month].substring(3)
     let colobj: any = {
       headerName: headerName,
       field: headerName,
       headerClass: this.bgColor[month],
       width:"160px",
+      cellStyle:{ "background-color": cssColor },
       valueGetter: (params: any) => this.getValue(params, month, row),
     };
     if (headerName === 'committed' || headerName === 'expected') {
@@ -91,6 +96,7 @@ export class AppComponent implements OnInit {
     // this.gridApi.setColumnDefs(this.cols); //These methods are deprecated || Library suggesting below format 
     this.gridApi.setGridOption('columnDefs', this.cols);
     this.gridApi.setGridOption('getRowStyle', this.getRowStyle());
+    // this.gridApi.setGridOption('getRowClass', this.getRowStyle());
     this.gridApi.setGridOption('onCellValueChanged', this.updtedColumns(event.api));
   }
   
@@ -99,16 +105,16 @@ export class AppComponent implements OnInit {
       const field = params.column.colDef.field;
         let data = params.data;
         let parentColumnIndex = params.column.getParent().groupId; // Get the parent column
-        const editedField = data[field]
+        const editedFieldValue = data[field]
         const editedColumnMonth = this.months[parentColumnIndex]
-        data[editedColumnMonth][field] =  +editedField
+        data[editedColumnMonth][field] =  +editedFieldValue
         const updatedRowData = this.updateRowData(this.correctedData,data)
         this.correctedData = this.calculateMonthlyTotals(this.months,updatedRowData)
         this.gridApi.applyTransaction({ update: [data] });
         this.gridApi.setGridOption('rowData', this.correctedData);
     };
   }
- 
+  
 
   calculateMonthlyTotals(columnDefs:any[], rowData:any[], recalculate?:true){
     const months = columnDefs.filter((col:any) => col !== 'USERINFO');
@@ -143,7 +149,7 @@ export class AppComponent implements OnInit {
     return (params:any)=>{
       if (params.node.rowIndex === params.api.getDisplayedRowCount() - 1) {
         return {
-          background: 'lightblue',
+          background: 'blue !important',
           fontWeight: 'bold',
           cursor:'not-allowed',
           pointerEvents:'none'
