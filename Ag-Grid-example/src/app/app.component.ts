@@ -45,14 +45,16 @@ export class AppComponent implements OnInit {
           headerName:'expeceted',
           headerClass: 'bg-yellow',
           valueGetter: "data['JAN']['expected'] + data['FEB']['expected'] + data['MAR']['expected']",
-          cellStyle:{ "background-color": 'yellow' }
+          cellStyle: (params: any) => this.getCellStyle(params, 'committed','yellow'),
+
         },
         {
           filed:"committed",
           headerName:'committed',
           headerClass: 'bg-yellow',
           valueGetter: "data['JAN']['committed'] + data['FEB']['committed'] + data['MAR']['committed']",
-          cellStyle:{ "background-color": 'yellow' }
+          cellStyle: (params: any) => this.getCellStyle(params, 'committed','yellow'),
+
         }
 
       ]
@@ -75,13 +77,29 @@ export class AppComponent implements OnInit {
       field: headerName,
       headerClass: this.bgColor[month],
       width:"160px",
-      cellStyle:{ "background-color": cssColor },
+      // cellStyle:{ "background-color": cssColor },
+      cellStyle: (params: any) => this.getCellStyle(params, headerName,cssColor),
       valueGetter: (params: any) => this.getValue(params, month, row),
     };
     if (headerName === 'committed' || headerName === 'expected') {
       colobj.editable = true; 
     }
     return colobj;
+  }
+
+  markAsDirty(params: any) {
+    params.colDef.cellClass = (p:any) =>
+      p.rowIndex.toString() === params.node.id ? "ag-cell-dirty" : "";
+    params.api.refreshCells({
+      force: true // without this line, the cell style is not refreshed at the first time
+    });
+  }
+  getCellStyle(params:any, headerName:any,cssColor:any){
+
+    if(params.node.rowIndex !== params.api.getDisplayedRowCount() - 1){
+      return { "background-color": cssColor };
+    }
+    return null
   }
 
   getValue(params: any, months: any, row: any) {
@@ -98,8 +116,8 @@ export class AppComponent implements OnInit {
     this.gridApi.setGridOption('getRowStyle', this.getRowStyle());
     // this.gridApi.setGridOption('getRowClass', this.getRowStyle());
     this.gridApi.setGridOption('onCellValueChanged', this.updtedColumns(event.api));
+    
   }
-  
   updtedColumns(event: any) {
     return (params: any) => {
       const field = params.column.colDef.field;
@@ -108,10 +126,14 @@ export class AppComponent implements OnInit {
         const editedFieldValue = data[field]
         const editedColumnMonth = this.months[parentColumnIndex]
         data[editedColumnMonth][field] =  +editedFieldValue
+        if (params.oldValue !== editedFieldValue) {
+          data['edited'] = true; 
+          this.markAsDirty(params)
+        }
         const updatedRowData = this.updateRowData(this.correctedData,data)
         this.correctedData = this.calculateMonthlyTotals(this.months,updatedRowData)
         this.gridApi.applyTransaction({ update: [data] });
-        this.gridApi.setGridOption('rowData', this.correctedData);
+
     };
   }
   
@@ -149,7 +171,7 @@ export class AppComponent implements OnInit {
     return (params:any)=>{
       if (params.node.rowIndex === params.api.getDisplayedRowCount() - 1) {
         return {
-          background: 'blue !important',
+          background: 'skyblue',
           fontWeight: 'bold',
           cursor:'not-allowed',
           pointerEvents:'none'

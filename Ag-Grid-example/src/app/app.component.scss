@@ -3,16 +3,15 @@
     color:white;
     background-color: green;
 }
-
-.ag-cell-value{
+.edited-cell {
     background-color: red !important;
-    color: white !important;
-}
-
-.show-table{
-    width: 100%;
-    height: 100%;
 }
 
 
+
+
+:host ::ng-deep .ag-cell-dirty {
+    background-color: red !important;
+}
+  
 
